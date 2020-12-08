@@ -1,5 +1,7 @@
+@can_contain = []
+
 def unfuck_bag_name(bag_name)
-  adj, color, junk = bag_name.split(' ')
+  adj, color, _junk = bag_name.split(' ')
   return "#{adj} #{color}"
 end
 
@@ -25,7 +27,7 @@ def read_input
       end
     end
   end
-  pp bag_containers
+  #pp bag_containers
   return bag_contents, bag_containers
 end
 
@@ -37,7 +39,11 @@ def can_contain?(containers, color, mine)
         contains ||= can_contain?(containers, nested_container, mine)
       end
     end
-    return contains
+    msg = contains ? 'DOES NOT' : 'DOES   '
+    #puts "#{msg}  #{color}"
+    if contains
+      @can_contain << color
+    end
   else
     return false
   end
@@ -48,6 +54,8 @@ def do_it
   count = containers.keys.count do |color|
     can_contain?(containers, color, 'shiny gold')
   end
+  puts @can_contain.uniq.count
+  puts @can_contain.inspect
   return count
 end
 
