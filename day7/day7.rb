@@ -1,34 +1,24 @@
 @can_contain = []
 
-def unfuck_bag_name(bag_name)
-  adj, color, _junk = bag_name.split(' ')
-  return "#{adj} #{color}"
-end
-
 def read_input
-  bag_contents = Hash.new{|h,k| h[k] = Hash.new }
   bag_containers = Hash.new{|h,k| h[k] = Array.new }
   File.open('input.txt', 'r') do |f|
     f.each_line do |line|
-      bag, contains = line.split('contain')
-      bag = unfuck_bag_name(bag)
+      bag, contains = line.split('bags contain')
 
       if contains =~ /no other bag/
-        bag_contents[bag] = nil
         next
       end
       
       numbers_and_bags = contains.split(',')
       numbers_and_bags.each do |nums_and_bags|
-        /(?<number>\d)\s(?<inside_bag>.*)/i =~ nums_and_bags
-        contained = unfuck_bag_name(inside_bag)
-        bag_contents[bag][contained] = number
-        bag_containers[contained] << bag
+        /(?<number>\d)\s(?<inside_bag>.*)\sbag/i =~ nums_and_bags
+        puts "#{nums_and_bags} #{number} #{inside_bag}"
+        bag_containers[bag.strip] << inside_bag.strip
       end
     end
   end
-  #pp bag_containers
-  return bag_contents, bag_containers
+  return bag_containers
 end
 
 def can_contain?(containers, color, mine)
@@ -40,7 +30,6 @@ def can_contain?(containers, color, mine)
       end
     end
     msg = contains ? 'DOES NOT' : 'DOES   '
-    #puts "#{msg}  #{color}"
     if contains
       @can_contain << color
     end
@@ -49,14 +38,19 @@ def can_contain?(containers, color, mine)
   end
 end
 
+#courtesy elmward - to double-check mine; unused
+def contains?(rules, container_color, color)
+  rules[container_color].include?(color) || rules[container_color].any? do |sub_container_color|
+    contains?(rules, sub_container_color, color)
+  end
+end
+
+
 def do_it
-  contents, containers = read_input
+  containers = read_input
   count = containers.keys.count do |color|
     can_contain?(containers, color, 'shiny gold')
   end
-  puts @can_contain.uniq.count
-  puts @can_contain.inspect
-  return count
 end
 
 puts do_it()
