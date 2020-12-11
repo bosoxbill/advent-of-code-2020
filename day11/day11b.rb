@@ -8,16 +8,27 @@ def build_floor(input)
   return floor
 end
 
+def skip_coords?(x, y, new_x, new_y)
+  #print "testing #{x},#{y} - #{new_x},#{new_y}"
+  same = (x == new_x) && (y == new_y)
+  in_line = (x == new_x) || (y == new_y)
+  in_diagonal = (new_x - x) == (new_y - y)
+
+  use = (in_line || in_diagonal) && !same
+  #puts "...#{!use}"
+  !use
+end
+
 def seat_change(floor, x, y)
   new_occupancy = false
   current_occupancy = floor[y][x]
   occupied = 0
-  (-1..1).each do |delta_y|
-    (-1..1).each do |delta_x|
-      next if (delta_y == delta_x && delta_x == 0) #skip origin
-      new_x = x + delta_x
-      new_y = y + delta_y
-      next if (new_y < 0 || new_x < 0) #skip negatives
+  width = floor.first.count
+  height = floor.count
+  ray_length = width + height
+  (0..height).each do |new_y|
+    (0..width).each do |new_x|
+      next if skip_coords?(x, y, new_x, new_y) #skip origin
       if floor[new_y] && floor[new_y][new_x]
         if floor[new_y][new_x] == '#'
           occupied += 1
@@ -27,7 +38,7 @@ def seat_change(floor, x, y)
   end
   case current_occupancy
   when '#'
-    if occupied >= 4
+    if occupied >= 5
       new_occupancy = 'L'
     end
   when 'L'
@@ -46,7 +57,7 @@ end
 
 def do_it
   floors = Array.new
-  floors << build_floor(File.open('input.txt').read)
+  floors << build_floor(File.open('test_input.txt').read)
 
   done = false
   counter = 0
